@@ -62,6 +62,24 @@ The MCP ecosystem within this architecture is divided into three layers:
 Azure AI Foundry (Agents / LLM) -> MCP Client / JSON-RPC -> MCP Server #1 -> Azure AI Search (Semantic) 
 Azure AI Foundry (Agents / LLM) -> MCP Client / JSON-RPC-> MCP Server #2 -> External OpenText / CRM  
 
+----------------
+
+```mermaid
+graph TD
+    subgraph App Layer
+        A[Azure AI Foundry / Agents & LLM] -->|JSON-RPC over SSE/HTTP| B[MCP Client]
+    end
+    subgraph Isolated Tools Layer
+        B --> MCP1[MCP Server #1: Knowledge Base]
+        B --> MCP2[MCP Server #2: Legacy Hub]
+    end
+    subgraph Data & Systems
+        MCP1 -->|Private Endpoint| C[Azure AI Search - Semantic]
+        MCP2 -->|Secure Abstraction| D[External OpenText / CRM]
+    end
+```
+----------------
+
 ## MCP Client (Orchestration & Application Layer)
 - **Location:** Embedded within the **Application Layer**, natively running inside **Azure AI Foundry (Agents/LLM)**.
 - **Implementation:** Modern agentic frameworks (such as *Semantic Kernel* or *LangChain*) hosted in Azure AI Foundry act as the native MCP Host, where the MCP Client resides. Alternatively, for custom .NET/Python orchestration, the client is implemented directly within the **App Service Web API**.
