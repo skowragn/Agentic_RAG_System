@@ -59,8 +59,8 @@ To guarantee enterprise-grade security and fault tolerance within the event-driv
 - To enable dynamic, agentic document discovery, the architecture implements the open-source **Model Context Protocol (MCP)** standard. This decouples the Large Language Model (LLM) from data sources and encapsulates system capabilities into reusable, secure tools.
 
 The MCP ecosystem within this architecture is divided into three layers:
-Azure AI Foundry (Agents / LLM) -> MCP Client / JSON-RPC -> MCP Server #1 -> Azure AI Search (Semantic) 
-Azure AI Foundry (Agents / LLM) -> MCP Client / JSON-RPC-> MCP Server #2 -> External OpenText / CRM  
+- **Azure AI Foundry**(Agents / LLM) -> **MCP Client** (JSON-RPC) -> **MCP Server #1** -> **Azure AI Search** (Semantic) 
+- **Azure AI Foundry**(Agents / LLM) -> **MCP Client** (JSON-RPC) -> **MCP Server #2** -> **External OpenText/CRM**  
 
 ----------------
 
