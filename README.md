@@ -88,3 +88,47 @@ Introduced exclusively where the user interacts via natural language, and fetchi
   -- Without MCP: The developer would have to write complex, brittle code to parse keywords, hit multiple endpoints sequentially, stitch the responses, and prompt the LLM.
 	-- With MCP: The LLM receives the question, evaluates its available tools via the MCP Client, and autonomously decides to call search_knowledge_base() first, followed by verify_document_status_in_crm() to validate data recency.
 
+
+
+# Event-Driven Synchronization & Real-Time UI
+
+To keep the system highly responsive and decoupled from corporate systems, the architecture utilizes an event-driven design for real-time document synchronization:
+- Event Ingestion (Azure Service Bus): When an internal user creates, modifies, or deletes a document directly inside OpenText or the CRM, these platforms publish a lightweight event to Azure Service Bus.
+- Payload Metadata: The event payload contains essential document metadata (such as Author, Title, Version, and Unique Identifier), which is sufficient for basic querying and indexing.
+- Real-Time UI Updates (SignalR & WebSockets): An Azure Function processes these Service Bus messages and immediately pushes a broadcast notification to the frontend via Azure SignalR Service. Using native WebSockets, the Blazor UI dynamically reflects the new or updated document on the user's screen in real time, without requiring a manual page refresh.
+
+# Advanced vs. Agentic Search Routing
+
+Depending on the complexity of the user's intent, the system dynamically routes search queries through two distinct pathways:
+
+- 1. Basic Metadata Lookup (Standard Path)
+
+If a user searches for a document using explicit constraints (e.g., searching by Author, specific Title keywords, or Version numbers), the application handles this through standard, deterministic database or cache lookups via the ASP.NET Core Web API.
+
+- 2. Deep Contextual & Conceptual Search (AI Agentic Path)
+
+If a user requires a deep content search (e.g., asking complex questions about document substance, cross-referencing information, or performing abstract keyword extraction), the query is routed to the AI Agents layer.
+- Dynamic Orchestration via MCP: The AI Agent (orchestrated in Azure AI Foundry via the MCP Client) dynamically evaluates how to answer the prompt.
+- Context Retrieval: The agent invokes the dedicated MCP Servers to securely access Azure AI Search (leveraging Semantic Search for conceptual accuracy) and extracts the raw source files from Azure Blob Storage to inject the precise context into the LLM's prompt window.
+
+
+# Resilience & Security Defense Mechanisms (Service Bus & SignalR)
+
+To guarantee enterprise-grade security and fault tolerance within the event-driven synchronization layer, the architecture implements the following defense mechanisms:
+
+# 1. Real-Time Security & Multi-Tenant Isolation (SignalR + Entra ID)
+
+- Token-Based Connection: When the Blazor UI establishes a WebSocket connection with the Azure SignalR Service, it passes the user's Microsoft Entra ID JWT token. SignalR authenticates the user and maps their connection to specific security groups.
+- Granular Group Scoping: Documents are never broadcasted globally. Instead, SignalR messages are published to scoped SignalR Groups that mirror the access control lists (ACLs) or tenant IDs of the documents.
+- Double-Check Validation: Even if a real-time notification reaches the UI, the frontend component verifies the user's local permissions via Entra ID claims before rendering the document metadata, ensuring external users never catch a glimpse of unauthorized metadata.
+
+# 2. Fault Tolerance & Guaranteed Delivery (Service Bus Resilience)
+
+- At-Least-Once Delivery & Peek-Lock: Azure Functions process messages from Azure Service Bus using the Peek-Lock pattern. A message is only deleted from the queue after the metadata is successfully processed and the SignalR broadcast is initiated.
+- Dead-Letter Queue (DLQ) Strategy: If a message from OpenText or CRM fails to process due to a transient error, the built-in retry policy triggers. If it fails consecutively (e.g., 5 times due to a database timeout), Service Bus automatically moves it to the Dead-Letter Queue (DLQ).
+- DLQ Alerting & Remediation: A secondary, automated Azure Function monitors the DLQ, raising critical alerts in Azure Monitor / Application Insights for the operations team, ensuring zero data loss and easy reprocessing once the underlying system recovers.
+
+# 3. Idempotency & De-duplication
+
+- Message De-duplication: Legacy systems (like OpenText) can occasionally retry sending the same webhook event. Azure Service Bus is configured with a de-duplication window using the document's unique EventID or DocumentID + Version.
+- Idempotent Consumers: The processing Azure Functions check the version number in the Azure SQL Database before executing. If an older or duplicate event arrives out of order, the system safely ignores it, preventing race conditions and UI flickering.
