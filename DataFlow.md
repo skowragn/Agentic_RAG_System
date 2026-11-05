@@ -5,12 +5,12 @@ This section describes the end-to-end data flow when an external user queries th
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as 👤 External User
-    participant UI as 💻 Blazor UI App
-    participant Client as 🤖 Azure AI Foundry<br>(MCP Client / LLM)
-    participant Server1 as 🔌 MCP Server #1<br>(AI Search Tool)
-    participant AISearch as 🔍 Azure AI Search<br>(Semantic & Lexical)
-    participant Blob as 📦 Azure Blob Storage<br>(Documents)
+    actor User as External User
+    participant UI as Blazor UI App
+    participant Client as Azure AI Foundry<br>(MCP Client / LLM)
+    participant Server1 as MCP Server #1<br>(AI Search Tool)
+    participant AISearch as Azure AI Search<br>(Semantic & Lexical)
+    participant Blob as Azure Blob Storage<br>(Documents)
 
     User->>UI: Input natural language query<br>"What are the technical specs for X?"
     UI->>Client: Forward user prompt & Entra ID User Context
