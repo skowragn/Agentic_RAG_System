@@ -60,7 +60,7 @@ To guarantee enterprise-grade security and fault tolerance within the event-driv
 
 The MCP ecosystem within this architecture is divided into three layers:
 - **Azure AI Foundry**(Agents / LLM) -> **MCP Client** (JSON-RPC) -> **MCP Server #1** -> **Azure AI Search** (Semantic) 
-- **Azure AI Foundry**(Agents / LLM) -> **MCP Client** (JSON-RPC) -> **MCP Server #2** -> **External OpenText/CRM**  
+- **Azure AI Foundry**(Agents / LLM) -> **MCP Client** (JSON-RPC) -> **MCP Server #2** -> **ECM or CRM**  
 
 ----------------
 
@@ -75,7 +75,7 @@ graph TD
     end
     subgraph Data & Systems
         MCP1 -->|Private Endpoint| C[Azure AI Search - Semantic]
-        MCP2 -->|Secure Abstraction| D[External OpenText / CRM]
+        MCP2 -->|Secure Abstraction| D[ECM or CRM]
     end
 ```
 ----------------
