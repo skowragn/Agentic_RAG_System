@@ -53,7 +53,7 @@ sequenceDiagram
 
    The MCP Client transmits the tool request over a secure transport protocol (SSE/HTTP) to **MCP Server #1 (AI Search Tool)**.
    This dedicated microservice acts as an abstraction barrier and executes a **Hybrid Search** query against **Azure AI Search** over a secure **Private Endpoint**. The search engine combines:
-   * *Lexical Search (BM25)* for precise keyword matching (e.g., "Kraków", "transformer").
+   * *Lexical Search (BM25)* for precise keyword matching (e.g., "Kraków", "schema").
    * *Semantic Search* to capture the conceptual meaning and intent behind the user's wording.
 
 5. **Document Content Extraction (Retrieval - Phase 2):** 
