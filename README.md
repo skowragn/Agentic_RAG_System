@@ -1,10 +1,11 @@
 # Cloud-native System to mange documents with AI content search
 Application with RAG and AI Agents
 
-<img width="1213" height="551" alt="image" src="https://github.com/user-attachments/assets/3f19cf0c-54ed-4b88-8ffa-adfef20ca01e" />
+<img width="1026" height="498" alt="image" src="https://github.com/user-attachments/assets/d3fd3d77-177f-4477-943f-56fe9c7e2e83" />
+
 
 # 1. Solution Architecture Overview
-This is a **cloud-native document discovery and management system built entirely on Microsoft Azure**. The primary purpose of the system is to aggregate, search, and manage documents stored across enterprise content management systems (such as OpenText and various CRM platforms). Additionally, the platform enables secure external sharing of specific documentation, such as technical schemas and diagrams, with third-party users and external user groups.
+This is a **cloud-native document discovery and management system built entirely on Microsoft Azure**. The primary purpose of the system is to aggregate, search, and manage documents stored across enterprise content management systems (such as ECM or CRM platforms). Additionally, the platform enables secure external sharing of specific documentation, such as technical schemas and diagrams, with third-party users and external user groups.
 
 
 # 2. Core Architecture Components
@@ -26,7 +27,7 @@ This is a **cloud-native document discovery and management system built entirely
 
 # 3. Event-Driven Synchronization & Real-Time UI
 To keep the system highly responsive and decoupled from corporate legacy systems, the architecture utilizes an **event-driven design for real-time document synchronization:**
-- **Event Ingestion (Azure Service Bus):** When an internal user creates, modifies, or deletes a document directly inside **OpenText** or the **CRM**, these platforms publish a lightweight event to **Azure Service Bus**.
+- **Event Ingestion (Azure Service Bus):** When an internal user creates, modifies, or deletes a document directly inside **ECM** or the **CRM**, these platforms publish a lightweight event to **Azure Service Bus**.
 - **Payload Metadata:** The event payload contains essential document metadata (such as *Author*, *Title*, *Version*, and *Unique Identifier*), which is sufficient for basic querying and indexing.
 - **Real-Time UI Updates (SignalR & WebSockets):** An Azure Function processes these Service Bus messages and immediately pushes a broadcast notification to the frontend via Azure SignalR Service. Using native WebSockets, the Blazor UI dynamically reflects the new or updated document on the user's screen in real time, without requiring a manual page refresh.
 
