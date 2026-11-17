@@ -1,7 +1,8 @@
 # Cloud-native System to mange documents with AI content search
 Application with RAG and AI Agents
 
-<img width="1026" height="498" alt="image" src="https://github.com/user-attachments/assets/d3fd3d77-177f-4477-943f-56fe9c7e2e83" />
+<img width="1217" height="534" alt="image" src="https://github.com/user-attachments/assets/10bceeab-1183-4178-9235-293334206538" />
+
 
 
 # 1. Solution Architecture Overview
@@ -46,12 +47,12 @@ To guarantee enterprise-grade security and fault tolerance within the event-driv
 ## Fault Tolerance & Guaranteed Delivery (Service Bus Resilience)
 
 - **At-Least-Once Delivery & Peek-Lock:** Azure Functions process messages from Azure Service Bus using the Peek-Lock pattern. A message is only deleted from the queue after the metadata is successfully processed and the SignalR broadcast is initiated.
-- **Dead-Letter Queue (DLQ) Strategy:** If a message from OpenText or CRM fails to process due to a transient error, the built-in retry policy triggers. If it fails consecutively (e.g., 5 times due to a database timeout), Service Bus automatically moves it to the **Dead-Letter Queue (DLQ)**.
+- **Dead-Letter Queue (DLQ) Strategy:** If a message from ECM or CRM fails to process due to a transient error, the built-in retry policy triggers. If it fails consecutively (e.g., 5 times due to a database timeout), Service Bus automatically moves it to the **Dead-Letter Queue (DLQ)**.
 - **DLQ Alerting & Remediation:** A secondary, automated Azure Function monitors the DLQ, raising critical alerts in **Azure Monitor / Application Insights** for the operations team, ensuring zero data loss and easy reprocessing once the underlying system recovers.
 
 ## Idempotency & De-duplication
 
-- **Message De-duplication:** Legacy systems (like OpenText) can occasionally retry sending the same webhook event. Azure Service Bus is configured with a de-duplication window using the document's unique EventID or DocumentID + Version.
+- **Message De-duplication:** Legacy systems can occasionally retry sending the same webhook event. Azure Service Bus is configured with a de-duplication window using the document's unique EventID or DocumentID + Version.
 - **Idempotent Consumers:** The processing Azure Functions check the version number in the **Azure SQL Database** before executing. If an older or duplicate event arrives out of order, the system safely ignores it, preventing race conditions and UI flickering.
 
 
@@ -90,15 +91,15 @@ graph TD
 - **Location:** Deployed as a dedicated, isolated microservice using **Azure Container Apps** or **Azure Functions (Flex Consumption)** within Region 1, adjacent to Azure AI Search.
 - **Role:** Acts as a specialized tool for the LLM. When the model requests semantic context, the MCP Server queries the Azure AI Search index via a secure **Private Endpoint** and returns clean, structured text context back to the client.
 
-## MCP Server #2 (Legacy & External Systems – OpenText / CRM)
-- **Location:** Positioned on the boundary of Region 1, interfacing directly with the **External Systems (OpenText ECM / CRM)**.
-- **Role:** Functions as a secure abstraction layer. Instead of exposing full API keys or a direct connection string to the CRM/OpenText, this server exposes strictly defined tools (e.g., get_latest_document_status(id)) to the LLM, isolating the core AI engine from legacy system complexities.
+## MCP Server #2 (Legacy & External Systems – ECM / CRM)
+- **Location:** Positioned on the boundary of Region 1, interfacing directly with the **External Systems (ECM / CRM)**.
+- **Role:** Functions as a secure abstraction layer. Instead of exposing full API keys or a direct connection string to the ECM/CRM, this server exposes strictly defined tools (e.g., get_latest_document_status(id)) to the LLM, isolating the core AI engine from legacy system complexities.
 
 
 # Architectural Justification & Security Benefits
 
 ## Principle of Least Privilege:
-  The LLM never holds direct database connection strings or broad API access to SQL or OpenText. It interacts exclusively with granular, structured tools explicitly exposed and strictly validated by the MCP Servers.
+  The LLM never holds direct database connection strings or broad API access to SQL or ECM. It interacts exclusively with granular, structured tools explicitly exposed and strictly validated by the MCP Servers.
 ## Network Isolation (Security Boundary):
   MCP Servers reside within dedicated, private subnets (MCP subnets). All communication with core Azure data repositories and external systems is strictly funneled through secure Private Endpoints.
 ## Seamless Scalability:
