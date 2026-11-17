@@ -1,5 +1,5 @@
 # Cloud-native System to mange documents with AI content search
-Application with RAG and AI Agents
+Application with RAG and AI Agents (Agentic RAG)
 
 <img width="1217" height="534" alt="image" src="https://github.com/user-attachments/assets/10bceeab-1183-4178-9235-293334206538" />
 
