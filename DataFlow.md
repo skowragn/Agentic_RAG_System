@@ -37,6 +37,50 @@ sequenceDiagram
     UI-->>User: Display answer with real-time streaming (WebSockets)
 ```
 
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as External User
+    participant UI as Blazor UI App
+    participant Client as Azure AI Foundry<br>(MCP Client / LLM Host)
+    participant Server1 as MCP Server #1<br>(Azure Function / Web API)
+    participant AISearch as Azure AI Search<br>(Semantic & Lexical)
+    participant Blob as Azure Blob Storage<br>(Documents)
+
+    User->>UI: Input natural language query<br>"What are the technical specs for X?"
+    UI->>Client: Forward user prompt & Entra ID JWT Token
+    
+    Note over Client: LLM analyzes intent & plans<br>retrieval strategy (Query Decomposition)
+    
+    Note over Client, Server1: MCP Protocol over HTTP (SSE + POST)
+    Client->>Server1: Establish SSE Connection (GET /mcp/sse)<br>[Authorization: Bearer EntraID_Token]
+    Server1-->>Client: Connection Ack & SSE Stream Open
+
+    loop Agentic Reasoning & Self-Correction Loop (Max N iterations)
+        Client->>Server1: HTTP POST /mcp/query (JSON-RPC: tools/call)<br>[EntraID User Context + Sub-query]
+        
+        Note over Server1: Extract Entra ID claims for<br>Identity-Based Security Trimming
+        Server1->>AISearch: Execute Hybrid Search API (BM25 + Vector)<br>with Security Filter via Private Endpoint
+        AISearch-->>Server1: Return Top-K authorized fragments & DocumentIDs
+
+        opt Deep Context Required (Parent Document Retrieval)
+            Note over Server1: Identify DocumentIDs needing<br>wider surrounding context
+            Server1->>Blob: Fetch extended chunks / source files (VNet)
+            Blob-->>Server1: Return raw text content
+        end
+
+        Note over Server1: Sanitize, format & attach<br>source citations for LLM
+        Server1-->>Client: Push structured context via SSE Stream (JSON-RPC)
+
+        Note over Client: LLM evaluates context sufficiency<br>(Are facts complete? Any contradictions?)
+    end
+
+    Note over Client: Synthesize final grounded answer<br>from verified context chunks
+    Client-->>UI: Stream generated answer + Inline Citations
+    UI-->>User: Display real-time streaming response (SignalR/WebSockets)
+```
+
+
 ### Detailed Data Flow Steps:
 
 1. **Query Ingestion & Contextual Enrichment:** 
